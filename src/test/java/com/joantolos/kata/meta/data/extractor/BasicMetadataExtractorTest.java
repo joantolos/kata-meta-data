@@ -5,16 +5,24 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class BasicMetadataExtractorTest {
 
     private BasicMetaDataExtractor basicMetaDataExtractor;
+    private String resourcesAbsolutePath;
 
     @Before
-    public void setUp() {
-        this.basicMetaDataExtractor = new BasicMetaDataExtractor("input");
+    public void setUp() throws URISyntaxException {
+        URL res = getClass().getClassLoader().getResource("input/2020 - 1.jpg");
+        File file = Paths.get(res.toURI()).toFile();
+        this.resourcesAbsolutePath = file.getAbsolutePath().replace("/2020 - 1.jpg", "");
+        this.basicMetaDataExtractor = new BasicMetaDataExtractor(this.resourcesAbsolutePath);
     }
 
     @Test
@@ -37,7 +45,13 @@ public class BasicMetadataExtractorTest {
 
     @Test
     public void shouldGetFilesList() {
-        Assert.assertNotNull(this.basicMetaDataExtractor.getResourceFolderFiles("input"));
+        Assert.assertNotNull(this.basicMetaDataExtractor.getResourceFolderFiles(this.resourcesAbsolutePath));
+    }
+
+    @Test
+    public void shouldGetFileStream() {
+        File[] files = this.basicMetaDataExtractor.getResourceFolderFiles(this.resourcesAbsolutePath);
+        Assert.assertNotNull(this.basicMetaDataExtractor.getFileStream(files[0]));
     }
 
     @Test

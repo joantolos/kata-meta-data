@@ -12,7 +12,13 @@ This software only works with JPG and MP4 and the file name should finish with "
 
 ## Usage
 
-Place the photos and videos on the "input" folder from resources. Then execute the class "MetaDataUpdater". The new files will be stored on build/resources/main/input
+Just execute:
+
+    ./gradlew clean build && java -jar build/libs/kata-meta-data-all.jar /Users/joan/Desktop/input
+
+Where "/Users/joan/Desktop/input" is the folder where you have the file located.
+
+CAUTION! Create a backup of your files since this software will override the original ones. Use at your own discretion.
 
 ## Meta data extractor    
 

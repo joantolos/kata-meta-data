@@ -5,6 +5,8 @@ import com.joantolos.kata.meta.data.extractor.BasicMetaDataExtractor;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class Updater {

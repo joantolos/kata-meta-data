@@ -7,10 +7,7 @@ import com.drew.metadata.Tag;
 import com.joantolos.kata.meta.data.entity.BasicMetadata;
 import com.joantolos.kata.meta.data.updater.DateUpdater;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,21 +25,28 @@ public class BasicMetaDataExtractor {
     }
 
     public List<BasicMetadata> getBasicMetadata() {
+        List<File> collect = Arrays.stream(this.getResourceFolderFiles(this.folderName))
+                .filter(metadata -> !metadata.getName().contains(".DS")).collect(Collectors.toList());
         return Arrays.stream(this.getResourceFolderFiles(this.folderName))
+                .filter(metadata -> !metadata.getName().contains(".DS"))
                 .map(metadata -> this.extract(metadata.getAbsolutePath(), getFileStream(metadata)))
                 .sorted(Comparator.comparingInt(BasicMetadata::getFileCardinal))
                 .map(this::updateCreationDate)
                 .collect(Collectors.toList());
     }
 
-    private InputStream getFileStream(File metadata) {
-        return this.getClass().getResourceAsStream("/" + this.folderName + "/" + metadata.getName());
+    protected File[] getResourceFolderFiles(String inputFolderPath) {
+        File directoryPath = new File(inputFolderPath);
+        return directoryPath.listFiles();
     }
 
-    protected File[] getResourceFolderFiles(String folderName) {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        URL url = loader.getResource(folderName);
-        return new File(Objects.requireNonNull(url).getPath()).listFiles();
+    protected InputStream getFileStream(File metadata) {
+        try {
+            return new FileInputStream(metadata.getAbsolutePath());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     protected BasicMetadata extract(String fileName, InputStream file) {
