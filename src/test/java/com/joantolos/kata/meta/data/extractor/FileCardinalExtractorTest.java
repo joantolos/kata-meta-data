@@ -17,4 +17,9 @@ public class FileCardinalExtractorTest {
     public void shouldExtractCardinalNumberFromFileName() {
         Assert.assertEquals(355, this.fileCardinalExtractor.extract("2020 - 355.jpg"));
     }
+
+    @Test
+    public void shouldExtractCardinalNumberFromFileNameNoMatterTheExtension() {
+        Assert.assertEquals(22, this.fileCardinalExtractor.extract("2021 - 22.jpeg"));
+    }
 }

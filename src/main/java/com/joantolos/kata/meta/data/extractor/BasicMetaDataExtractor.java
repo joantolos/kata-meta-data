@@ -25,8 +25,6 @@ public class BasicMetaDataExtractor {
     }
 
     public List<BasicMetadata> getBasicMetadata() {
-        List<File> collect = Arrays.stream(this.getResourceFolderFiles(this.folderName))
-                .filter(metadata -> !metadata.getName().contains(".DS")).collect(Collectors.toList());
         return Arrays.stream(this.getResourceFolderFiles(this.folderName))
                 .filter(metadata -> !metadata.getName().contains(".DS"))
                 .map(metadata -> this.extract(metadata.getAbsolutePath(), getFileStream(metadata)))
@@ -73,7 +71,7 @@ public class BasicMetaDataExtractor {
     }
 
     private boolean getIsVideo(List<String> basicMetadata) {
-        return basicMetadata.get(0).contains("[MP4]");
+        return basicMetadata.get(0).contains("[MP4]") || basicMetadata.get(0).contains("[QuickTime]");
     }
 
     private String getCreationDate(List<String> basicMetadata) {
