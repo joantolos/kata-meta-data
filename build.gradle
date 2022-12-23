@@ -6,31 +6,44 @@ repositories {
     jcenter()
 }
 
+jar {
+    manifest {
+        attributes "Main-Class": "com.joantolos.kata.meta.data.MetaDataUpdater"
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
 jacocoTestReport {
     reports {
-        xml.enabled false
-        csv.enabled false
+        xml.enabled true
+        csv.enabled true
         html.destination file("${buildDir}/jacocoHtml")
     }
     afterEvaluate {
-        classDirectories = files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: ['**/com/joantolos/kata/meta/data/MetaDataUpdater**'])
+        classDirectories.from = files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: ['**/com/joantolos/kata/meta/data/MetaDataUpdater**',])
         })
     }
 }
 
+test {
+    useJUnitPlatform()
+}
+
+task jacoco {
+    finalizedBy jacocoTestReport
+}
+
 dependencies {
-    testImplementation 'junit:junit:4.13'
+    implementation('com.drewnoakes:metadata-extractor:2.18.0')
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
 
-    compile group: 'com.drewnoakes', name: 'metadata-extractor', version: '2.15.0'
 
+    testImplementation('org.junit.jupiter:junit-jupiter-engine:5.9.1')
 }
 
-task fatJar(type: Jar) {
-    manifest { attributes'Main-Class': 'com.joantolos.kata.meta.data.MetaDataUpdater' }
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
-
-build.finalizedBy(jacocoTestReport, fatJar)
+build.finalizedBy(jacocoTestReport)

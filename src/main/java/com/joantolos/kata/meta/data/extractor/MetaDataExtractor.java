@@ -4,38 +4,37 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Tag;
-import com.joantolos.kata.meta.data.entity.BasicMetadata;
+import com.joantolos.kata.meta.data.entity.Metadata;
 import com.joantolos.kata.meta.data.updater.DateUpdater;
 
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class BasicMetaDataExtractor {
+public class MetaDataExtractor {
 
     private final String folderName;
     private String lastCreationDate = null;
     private final DateUpdater dateUpdater;
     private final FileCardinalExtractor fileCardinalExtractor;
 
-    public BasicMetaDataExtractor(String folderName) {
+    public MetaDataExtractor(String folderName) {
         this.folderName = folderName;
         this.dateUpdater = new DateUpdater();
         this.fileCardinalExtractor = new FileCardinalExtractor();
     }
 
-    public List<BasicMetadata> getBasicMetadata() {
+    public List<Metadata> getBasicMetadata() {
         return Arrays.stream(this.getResourceFolderFiles(this.folderName))
                 .filter(metadata -> !metadata.getName().contains(".DS"))
                 .map(metadata -> this.extract(metadata.getAbsolutePath(), getFileStream(metadata)))
-                .sorted(Comparator.comparingInt(BasicMetadata::getFileCardinal))
+                .sorted(Comparator.comparingInt(Metadata::fileCardinal))
                 .map(this::updateCreationDate)
                 .collect(Collectors.toList());
     }
 
     protected File[] getResourceFolderFiles(String inputFolderPath) {
-        File directoryPath = new File(inputFolderPath);
-        return directoryPath.listFiles();
+        return new File(inputFolderPath).listFiles();
     }
 
     protected InputStream getFileStream(File metadata) {
@@ -47,23 +46,23 @@ public class BasicMetaDataExtractor {
         return null;
     }
 
-    protected BasicMetadata extract(String fileName, InputStream file) {
+    protected Metadata extract(String fileName, InputStream file) {
         List<String> basicMetadata = new ArrayList<>();
         try {
             ImageMetadataReader.readMetadata(file).getDirectories().forEach(directory -> basicMetadata.addAll(getTags(directory)));
         } catch (ImageProcessingException | IOException ignored) {
         }
-        return new BasicMetadata(this.fileCardinalExtractor.extract(fileName), fileName, getIsVideo(basicMetadata), this.getCreationDate(basicMetadata));
+        return new Metadata(this.fileCardinalExtractor.extract(fileName), fileName, getIsVideo(basicMetadata), this.getCreationDate(basicMetadata));
     }
 
-    private BasicMetadata updateCreationDate(BasicMetadata basicMetadata) {
-        if (basicMetadata.isVideo() && this.lastCreationDate != null) {
+    private Metadata updateCreationDate(Metadata metadata) {
+        if (metadata.isVideo() && this.lastCreationDate != null) {
             this.lastCreationDate = this.dateUpdater.addOneMinute(this.lastCreationDate);
-            basicMetadata.setCreationDate(this.lastCreationDate);
+            return new Metadata(metadata.fileCardinal(), metadata.filePath(), metadata.isVideo(), this.lastCreationDate);
         } else {
-            this.lastCreationDate = basicMetadata.getCreationDate();
+            this.lastCreationDate = metadata.creationDate();
         }
-        return basicMetadata;
+        return metadata;
     }
 
     private List<String> getTags(Directory directory) {
@@ -79,3 +78,4 @@ public class BasicMetaDataExtractor {
         return dateMetadata == null ? null : dateMetadata.replace("[Exif SubIFD] Date/Time Original - ", "");
     }
 }
+

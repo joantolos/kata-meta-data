@@ -1,13 +1,17 @@
 package com.joantolos.kata.meta.data.updater;
 
-import com.joantolos.kata.meta.data.entity.BasicMetadata;
-import com.joantolos.kata.meta.data.extractor.BasicMetaDataExtractor;
+import com.joantolos.kata.meta.data.entity.Metadata;
+import com.joantolos.kata.meta.data.extractor.MetaDataExtractor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 public class Updater {
+
+    private final Logger log = LoggerFactory.getLogger(Updater.class);
 
     private final String inputFolder;
     private final DateUpdater dateUpdater;
@@ -18,24 +22,24 @@ public class Updater {
     }
 
     public boolean update() {
-        List<BasicMetadata> basicMetadata = new BasicMetaDataExtractor(this.inputFolder).getBasicMetadata();
+        List<Metadata> metadata = new MetaDataExtractor(this.inputFolder).getBasicMetadata();
 
-        basicMetadata.forEach(metaData -> {
-            System.out.print("########### Processing file: " + metaData.getFilePath());
+        metadata.forEach(metaData -> {
+            log.info("########### Processing file: " + metaData.filePath());
             if (metaData.isVideo()) {
-                System.out.println(". Is a video, updating it's creation date to: " + metaData.getCreationDate());
-                executeCommand("exiftool '-CreateDate=" + metaData.getCreationDate() + "' '" + metaData.getFilePath() + "'");
-                new File(metaData.getFilePath() + "_original").delete();
+                log.info(". Is a video, updating its creation date to: " + metaData.creationDate());
+                executeCommand("exiftool '-CreateDate=" + metaData.creationDate() + "' '" + metaData.filePath() + "'");
+                new File(metaData.filePath() + "_original").delete();
             } else {
-                System.out.println(". Is not a video");
+                log.info(". Is not a video");
             }
-            executeCommand("touch -t " + this.dateUpdater.exifFormatToTouchFormat(metaData.getCreationDate()) + " '" + metaData.getFilePath() + "'");
+            executeCommand("touch -t " + this.dateUpdater.exifFormatToTouchFormat(metaData.creationDate()) + " '" + metaData.filePath() + "'");
         });
         return true;
     }
 
     private void executeCommand(String command) {
-        System.out.println("Executing command: " + command);
+        log.info("Executing command: " + command);
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command("bash", "-c", command);
 
