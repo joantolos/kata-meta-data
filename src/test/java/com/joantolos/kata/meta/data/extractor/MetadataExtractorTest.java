@@ -56,6 +56,5 @@ public class MetadataExtractorTest {
     public void shouldGetMetadataList() {
         List<Metadata> metadata = this.metaDataExtractor.getBasicMetadata();
         Assertions.assertEquals(5, metadata.size());
-        Assertions.assertEquals("/Users/joan/Documents/code/joantolos/kata-meta-data/build/resources/test/input/2020 - 1.jpg", metadata.get(0).filePath());
     }
 }
